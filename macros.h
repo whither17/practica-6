@@ -7,4 +7,7 @@
 #define WIDTH_GV 1000
 #define HEIGHT_GV 600
 
+const int escala = 50;
+const float T = 1,k = 1, G = 1;
+
 #endif // MACROS_H

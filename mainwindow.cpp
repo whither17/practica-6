@@ -11,10 +11,16 @@ MainWindow::MainWindow(QWidget *parent)
     this->setWindowTitle("Simulador gravitacional");
     ui->simulacion->hide();
     ui->parar_boton->hide();
+    data = new database;
+    data->set_database_name("resultados.txt");
+    datos = "";
+    timer = new QTimer;
 
     connect(ui->crear, SIGNAL(clicked(bool)), this, SLOT(crearPlaneta()));
     connect(ui->iniciar_boton, SIGNAL(clicked(bool)), this, SLOT(cargarUiSimulacion()));
     connect(ui->parar_boton, SIGNAL(clicked(bool)), this, SLOT(cargarUI()));
+
+    connect(timer, SIGNAL(timeout()), this, SLOT(velocidades()));
 }
 
 void MainWindow::simular()
@@ -25,6 +31,46 @@ void MainWindow::simular()
     escena->addItem(sistema[1]);
 
     ui->simulacion->setScene(escena);
+    n = 0;
+    timer->start();
+}
+
+void MainWindow::velocidades()
+{
+    /*
+     * No funciona, está mala la ecuacion, no sé si es la ecuacion de aceleracion o la ecuacion de
+     * velocidad, solo sé que la ecuacion de distancia si trabaja
+     * correctamente
+    */
+    double aceleracion_suma_x = 0;
+    double aceleracion_suma_y = 0;
+    double r_cubo = 0;
+
+    for(unsigned int i = 0; i < sistema.size(); i++)
+    {
+        for(unsigned int j = 0; j < sistema.size(); j++)
+        {
+            if(i != j)
+            {
+                r_cubo = std::pow(distancia(sistema[j], sistema[i]), 3);
+                aceleracion_suma_x = aceleracion_suma_x + G*((sistema[j]->getMasa()/r_cubo)*(sistema[j]->getX_i() - sistema[i]->getX_i()));
+                aceleracion_suma_y = aceleracion_suma_y + G*((sistema[j]->getMasa()/r_cubo)*(sistema[j]->getY_i() - sistema[i]->getY_i()));
+                qDebug() << aceleracion_suma_x;
+            }
+        }
+
+        sistema[i]->setVx_i(sistema[i]->getVx_i()+aceleracion_suma_x*T*n);
+        sistema[i]->setVy_i(sistema[i]->getVy_i()+aceleracion_suma_y*T*n);
+
+        aceleracion_suma_x = 0;
+        aceleracion_suma_y = 0;
+
+
+        sistema[i]->setPosicion((sistema[i]->getX_i()+sistema[i]->getVx_i()*T*n*k), (sistema[i]->getY_i()+sistema[i]->getVy_i()*T*n*k));
+        datos = datos + "\t" + std::to_string(sistema[i]->x()) + "\t" + std::to_string(sistema[i]->y());
+    }
+    datos = datos + "\n";
+    n++;
 
 }
 
@@ -71,13 +117,25 @@ void MainWindow::cargarUiSimulacion()
     simular();
 }
 
+double MainWindow::distancia(planet *p1, planet *p2)
+{
+    double dist = 0;
+
+    dist = std::sqrt(std::pow((p2->getX_i() - p1->getX_i()), 2) + std::pow((p2->getY_i() - p1->getY_i()), 2));
+
+    return dist;
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete data;
 }
 
 void MainWindow::cargarUI()
 {
+    timer->stop();
+    n = 0;
     borrarCuerpos();
     this->setFixedSize(WIDTH_UI, HEIGHT_UI);
     this->setWindowTitle("Simulador gravitacional");
@@ -86,5 +144,7 @@ void MainWindow::cargarUI()
     ui->groupBox->show();
     ui->iniciar_boton->show();
     ui->n_planets->setText(QString::number(sistema.size()));
+
+    data->append_database_info(datos);
 }
 

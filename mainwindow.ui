@@ -52,12 +52,12 @@
     <property name="title">
      <string/>
     </property>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>10</x>
        <y>20</y>
-       <width>410</width>
+       <width>412</width>
        <height>165</height>
       </rect>
      </property>
@@ -142,6 +142,9 @@
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="vx0">
+            <property name="minimum">
+             <double>-999.000000000000000</double>
+            </property>
             <property name="maximum">
              <double>999.990000000000009</double>
             </property>
@@ -160,6 +163,9 @@
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="vy0">
+            <property name="minimum">
+             <double>-999.000000000000000</double>
+            </property>
             <property name="maximum">
              <double>999.990000000000009</double>
             </property>
